@@ -1,0 +1,25 @@
+# Feed forward NN with variable hyperparameters
+class Interpolation(nn.Module):
+    def __init__(self, in_size, out_size, hidden_layer_sizes, dropout, activation):
+        super(Interpolation, self).__init__()
+        self.dropout_rate = dropout
+        self.activation = activation() # skorch passes the class, so we instantiate it
+
+        layers = []
+        current_in_size = in_size
+
+        # Dynamically build hidden layers
+        for hidden_size in hidden_layer_sizes:
+            layers.append(nn.Linear(current_in_size, hidden_size))
+            layers.append(self.activation)
+            if self.dropout_rate > 0:
+                layers.append(nn.Dropout(self.dropout_rate))
+            current_in_size = hidden_size
+
+        # Output layer (linear for regression)
+        layers.append(nn.Linear(current_in_size, out_size))
+
+        self.network = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.network(x)
